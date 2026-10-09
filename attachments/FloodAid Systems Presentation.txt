@@ -1,0 +1,65 @@
+INTRODUCTION – 00:00
+
+Hi, I'm Faraz, a supply chain professional from Dhaka, Bangladesh.
+
+My solution is named FloodAid Systems — a flood-aid decision-support platform that will bridge hydrology, social needs, and humanitarian logistics.
+
+I'm an MITx MicroMasters credential holder in Supply Chain Management, completed my MBA from University of Dhaka, and BSc in Mechanical Engineering. I also have experience managing electrical supply chains over public infrastructure, apparels & telecom projects in Bangladesh.
+
+THE PROBLEM – 00:55
+
+The problem is that Bangladesh is historically a flood-prone country, where around 16 critical districts host more than 44 million people. Floods regularly disrupt transportation, food access, medicine supplies, and local markets.
+
+Aid delivery is often reactive, fragmented, and delayed. Humanitarian agencies often lack integrated systems that connect real-time disaster signals with operational logistics planning. And as we know, in disasters, friction often kills more than inefficiency.
+
+Here we can see the northern region, colored in purple, where vulnerable districts host around more than 15 million people and rapid flash floods occur. In these districts, floods usually affect the area within a one-week framework. That one-week gap can be very critical for decisive action and saving human lives. Floods in these areas often last two to four weeks, and markets are often accessible, so cash assistance is often more effective than physical aid delivery.
+
+The problem is also seen in the lesser frequent southern flood districts hosting around 23 million people, where waterlogging often continues into the second month, and market prices often inflate. This creates a need to stabilize markets by importing aid from international markets, since domestic food supply chains are often disrupted.
+
+There can also be a rarer cyclone event, occurring alongside southern floods. These can be very severe because they can disrupt port capacities and aid imports, while cyclone-affected districts often have additional shelter and rehabilitation needs beyond physical aid delivery.
+
+Bangladesh, as transitioning from an LDC to a developing country, has around 28% of people living under the poverty line, among whom 10% live in extreme poverty. An additional 16% of the population are at risk of falling into poverty. So in natural disasters, vulnerable people are the most affected.
+
+PROPOSED SOLUTION – 05:12
+
+What we are offering is a flood-aid distribution decision-support platform that will integrate real-time hydrological data, including rainfall and river flow data, and provide around one week of response time to humanitarian actors, including government and NGO - so they can timely respond with the right kind of assistance — whether cash assistance for districts with access to operational markets, physical aid for districts with disrupted markets, even rehabilitation support where needed.
+
+If we notice here, the majority of the northern districts — this is from a flood in 2020 — were affected within one week or so after river overflow. The duration in the north is generally 2-4 weeks, but the reaction time of less than 1 week is critical to save lives.
+
+If we follow the same UN document, after anticipating river overflow, humanitarian action was triggered within one week, providing cash assistance, dry food, medicines, and emergency kits to the affected populations.
+
+Additionally, we will provide resilient supply chain network design, market intelligence over domestic markets and international market prices, and more critically, data mining over India, ASEAN countries, and MERCOSUR countries, and supply chain visibility using EDI and barcode technologies.
+
+If we see the Bangladesh context, the divisional infrastructure remains more or less unaffected by natural disasters, so markets are more likely to remain operational around divisional DCs.
+
+Divisional DCs will provide physical aids to District-level storage facilities.
+
+The affected people will be divided into micro-clusters of 1,000, 5,000, and 10,000 people.
+
+And from district-level storage facilities, physical aid will go to temporary distribution points, where, with the assistance of local communities, aid will be distributed to affected households.
+
+I believe keeping divisional DCs and district-level storage facilities as temporary camps will make the network more decentralized, as opposed to highly centralized distribution systems that fit more with consumer packaged goods or industrial product distribution.
+
+Community-level coordinators will organize the final handover of aid to affected households, whether cash assistance, mobile banking facilities, or physical aid. For domestic operational markets, local procurement will be made from divisional and operational markets, and the market intelligence system will signal aid-import requirements if domestic prices inflate.
+
+We can also add network flexibility. For example, Chattogram is our country’s largest seaport and handles around 90% of national trade - the country's imports and exports. But we can reduce pressure on Chattogram Port by importing through Mongla Port, and if we import aid from India, the Benapole land border could be used. For emergency aid, including medicines and kits, supplies could also be moved through Dhaka Airport. From ports to aid, delivery will go to divisional DCs, then district-level storage facilities.
+
+We can also increase network flexibility by adding extra divisional DCs, in case the district-level markets fail, although that would increase project costs, but it gives the system more resilience.
+
+Based on plausible scenarios and network flexibility, we will create a surrogate model linking hydrology to social needs — whether cash assistance or physical aid — and another surrogate model for physical aid demand to network responses using machine learning. We will simulate around 10,000 runs so institutional clients can choose their preferred service level. In humanitarian sectors, the standard service level is 95%. If capacity levels are reduced, the service level falls sharply and hovers around 93%, so this helps us determine appropriate capacity levels to maintain a 95% service level and reasonable utilization rates.
+
+Beyond the operational design, the interface will be very visual, user-friendly, and transparent, so institutional clients can intuitively design operations. If individual institutional clients, including government bodies, NGOs, and United Nations agencies waive privacy concerns over operations, inter-organizational operational zoning can also be included in the service, so no affected populations are over-served or excluded entirely.
+
+REVENUE MODEL & FINANCIAL SUSTAINABILITY – 16:08
+
+The customers of the Software-as-a-Service (SaaS) will mainly be NGOs, government agencies, United Nations organizations, and humanitarian operators. The base revenue stream will come from 5 targeted institutional clients, where the initial R&D cost will be covered through software roll-out fees, and they will also be charged an annual service subscription, which will cover service personnel salaries and product improvement costs.
+
+The goal of the base revenue model is not to maximize profits, but to cover operational and development costs. Smaller NGOs will be offered access at subsidized rates, and surplus profits can be reinvested in empowering community members & local youth to organize final household distribution, in partnership with the NGOs operating locally, as well as further improving the software.
+
+After finalizing the Minimum Viable Product (MVP), the product will be scaled across similar climate-affected regions, across South Asia, Southeast Asia, Sub-Saharan Africa, and Latin America.
+
+SOCIAL IMPACT – 18:22
+
+The social impact we intend to make is timely delivery of the right aid to affected populations. It can potentially save them from the one-week window gap that reactive humanitarian responders often miss. It can also stabilize domestic markets through market intelligence and import recommendations, avoid over-serving or excluding affected populations through inter-organizational zoning. It can also reduce unemployment by empowering community members and local youth in final household distribution. And it will reduce carbon emissions by helping clients design resilient, optimal & agile supply chain networks in planning for plausible scenarios, effective capacity planning using simulations, and streamlining operations through micro-clustering, visibility & zoning.
+
+Please feel free to reach out to me.

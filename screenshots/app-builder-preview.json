@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "FloodAid Systems",
+      "hasCanvas": false,
+      "bodyTextLen": 2010,
+      "bodyTextHash": "be87b797f89565876c0d8cf5a334f1c585b1b12642bce2d31eaffbc264e7c33a",
+      "bodyTextPrefix": "FLOODAID SYSTEMS Planning desk Bangladesh flood aid. One week fr",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "FloodAid Systems",
+      "hasCanvas": false,
+      "bodyTextLen": 2010,
+      "bodyTextHash": "be87b797f89565876c0d8cf5a334f1c585b1b12642bce2d31eaffbc264e7c33a",
+      "bodyTextPrefix": "FLOODAID SYSTEMS Planning desk Bangladesh flood aid. One week fr",
+      "horizontalOverflow": true,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
