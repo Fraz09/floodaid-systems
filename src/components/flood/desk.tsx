@@ -163,7 +163,7 @@ export function Desk() {
         </div>
         <p className="mt-1 max-w-2xl text-sm text-ink/75">{phase.d}</p>
         <label className="mt-3 block text-xs text-ink/60" htmlFor="day">
-          Move through the response week
+          Move through the response week. The network diagram follows this day.
           <input
             id="day"
             className="mt-2"
@@ -172,7 +172,10 @@ export function Desk() {
             max={7}
             step={1}
             value={day}
-            onChange={(e) => setDay(Number(e.target.value))}
+            onChange={(e) => {
+              setDay(Number(e.target.value));
+              setView("map");
+            }}
           />
         </label>
         <ol className="mt-2 grid grid-cols-5 gap-1 text-xs">
@@ -196,6 +199,7 @@ export function Desk() {
             <div className="min-w-0 overflow-hidden border border-ink/10 bg-card">
               <OpsMap
                 desk={desk}
+                day={day}
                 selected={selected}
                 onSelect={(name) => {
                   setSelected(name);

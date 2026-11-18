@@ -566,6 +566,21 @@ export function phaseFor(day: number) {
   return current;
 }
 
+/** Which echelons the operational map draws on a given day of the response week. */
+export function mapLayers(day: number) {
+  const d = Math.max(0, Math.min(7, day));
+  return {
+    /** District colour means the cash / goods / shelter decision is locked. */
+    instrument: d >= 2,
+    /** Gateway to divisional DC. Day 4 is the first inbound day, still partial. */
+    inbound: d >= 5 ? 1 : d >= 4 ? 0.5 : 0,
+    /** Divisional DC to district store. */
+    district: d >= 7 ? 1 : d >= 6 ? 0.6 : 0,
+    /** Household clusters. */
+    handover: d >= 7,
+  };
+}
+
 export function instrumentLabel(instrument: Instrument): string {
   if (instrument === "cash") return "Cash";
   if (instrument === "physical") return "Physical";

@@ -1,12 +1,13 @@
-import { GATEWAYS, type Desk, type DeskDistrict } from "@/lib/planning";
+import { GATEWAYS, mapLayers, type Desk, type DeskDistrict } from "@/lib/planning";
 
 type Props = {
   desk: Desk;
+  day: number;
   selected: string | null;
   onSelect: (name: string) => void;
 };
 
-export function OpsMap({ desk, selected, onSelect }: Props) {
+export function OpsMap({ desk, day, selected, onSelect }: Props) {
   const xs = [
     ...desk.districts.map((d) => d.seed.x),
     ...GATEWAYS.map((g) => g.x),
@@ -26,91 +27,111 @@ export function OpsMap({ desk, selected, onSelect }: Props) {
   const maxLeg = Math.max(1, ...desk.active.flatMap((d) => d.flows.map((f) => f.tonnes)), ...desk.portLegs.map((p) => p.tonnes));
 
   const ranked = new Set(desk.active.slice(0, 5).map((d) => d.seed.name));
+  const layers = mapLayers(day);
+  const note =
+    day < 2
+      ? "Signal only. Open rings are districts in the plan. Nothing is moving."
+      : day < 4
+        ? "Instruments locked. Teal is cash, clay is physical aid, ink is shelter. Tonnes have not left the gateway."
+        : day < 6
+          ? "Dashed lines are inbound tonnes, gateway to divisional DC."
+          : day < 7
+            ? "Solid lines stage those tonnes into the district stores."
+            : "Last mile. The outer ring is the household handover.";
 
   return (
     <div className="relative min-w-0">
       <svg
         viewBox={vb}
         role="img"
-        aria-label="Operational map. Kilometres from Dhaka, north at the top. Lines are aid flows."
+        aria-label={`Operational map on day ${day}. Kilometres from Dhaka, north at the top. ${note}`}
         className="block h-auto w-full max-w-full"
       >
         <rect x={minX} y={-maxY} width={maxX - minX} height={maxY - minY} fill="var(--color-card)" />
         {grid(minX, maxX, minY, maxY)}
         <Scale minX={minX} maxY={maxY} />
-        {desk.portLegs.map((leg) => (
-          <line
-            key={`${leg.port}-${leg.division}`}
-            x1={leg.x1}
-            y1={-leg.y1}
-            x2={leg.x2}
-            y2={-leg.y2}
-            stroke="var(--color-teal)"
-            strokeWidth={stroke(leg.tonnes, maxLeg)}
-            strokeDasharray="3 2"
-            strokeLinecap="round"
-            opacity={0.85}
-            pointerEvents="none"
-          />
-        ))}
-        {desk.active.flatMap((d) =>
-          d.flows.map((f) => {
-            const dc = desk.dcTonnes.find((x) => x.division === f.division);
-            if (!dc) return null;
-            const hot = selected === d.seed.name;
-            return (
+        {layers.inbound > 0
+          ? desk.portLegs.map((leg) => (
               <line
-                key={`${d.seed.name}-${f.division}`}
-                x1={dc.x}
-                y1={-dc.y}
-                x2={d.seed.x}
-                y2={-d.seed.y}
-                stroke={hot ? "var(--color-clay)" : "var(--color-ink)"}
-                strokeWidth={stroke(f.tonnes, maxLeg)}
+                key={`${leg.port}-${leg.division}`}
+                x1={leg.x1}
+                y1={-leg.y1}
+                x2={leg.x2}
+                y2={-leg.y2}
+                stroke="var(--color-teal)"
+                strokeWidth={stroke(leg.tonnes, maxLeg)}
+                strokeDasharray="3 2"
                 strokeLinecap="round"
-                opacity={selected && !hot ? 0.18 : 0.8}
+                opacity={0.9 * layers.inbound}
                 pointerEvents="none"
               />
-            );
-          }),
-        )}
+            ))
+          : null}
+        {layers.district > 0
+          ? desk.active.flatMap((d) =>
+              d.flows.map((f) => {
+                const dc = desk.dcTonnes.find((x) => x.division === f.division);
+                if (!dc) return null;
+                const hot = selected === d.seed.name;
+                return (
+                  <line
+                    key={`${d.seed.name}-${f.division}`}
+                    x1={dc.x}
+                    y1={-dc.y}
+                    x2={d.seed.x}
+                    y2={-d.seed.y}
+                    stroke={hot ? "var(--color-clay)" : "var(--color-ink)"}
+                    strokeWidth={stroke(f.tonnes, maxLeg)}
+                    strokeLinecap="round"
+                    opacity={(selected && !hot ? 0.18 : 0.85) * layers.district}
+                    pointerEvents="none"
+                  />
+                );
+              }),
+            )
+          : null}
         {desk.districts.map((d) => (
           <DistrictDot
             key={d.seed.name}
             district={d}
             selected={selected === d.seed.name}
             labeled={ranked.has(d.seed.name) || selected === d.seed.name}
+            colored={layers.instrument}
+            handover={layers.handover}
             onSelect={onSelect}
           />
         ))}
-        {desk.dcTonnes.map((dc) => (
-          <g key={dc.division}>
-            <rect
-              x={dc.x - 4.2}
-              y={-dc.y - 4.2}
-              width={8.4}
-              height={8.4}
-              fill="var(--color-card)"
-              stroke="var(--color-ink)"
-              strokeWidth={1.4}
-              pointerEvents="none"
-            />
-            <text
-              x={dc.x + 7}
-              y={-dc.y + 2}
-              fill="var(--color-ink)"
-              fontSize={9}
-              fontFamily="Outfit, sans-serif"
-              pointerEvents="none"
-            >
-              {dc.division} DC
-            </text>
-          </g>
-        ))}
+        {desk.dcTonnes.map((dc) => {
+          const live = layers.inbound > 0;
+          return (
+            <g key={dc.division} opacity={live ? 1 : 0.35}>
+              <rect
+                x={dc.x - 4.2}
+                y={-dc.y - 4.2}
+                width={8.4}
+                height={8.4}
+                fill={live ? "var(--color-ink)" : "var(--color-card)"}
+                stroke="var(--color-ink)"
+                strokeWidth={live ? 1.6 : 1.1}
+                pointerEvents="none"
+              />
+              <text
+                x={dc.x + 7}
+                y={-dc.y + 2}
+                fill="var(--color-ink)"
+                fontSize={9}
+                fontFamily="Outfit, sans-serif"
+                pointerEvents="none"
+              >
+                {dc.division} DC
+              </text>
+            </g>
+          );
+        })}
         {desk.gateways
           .filter((g) => g.tonnes > 1)
           .map((g) => (
-            <g key={g.gateway.port}>
+            <g key={g.gateway.port} opacity={layers.inbound > 0 ? 1 : layers.instrument ? 0.4 : 0.28}>
               <polygon points={diamond(g.gateway.x, -g.gateway.y, 5.2)} fill="var(--color-teal)" pointerEvents="none" />
               <text
                 x={g.gateway.x + 8}
@@ -126,7 +147,7 @@ export function OpsMap({ desk, selected, onSelect }: Props) {
           ))}
       </svg>
       <p className="border-t border-ink/10 px-3 py-2 text-xs text-ink/70">
-        Kilometres from Dhaka. Squares are divisional DCs. Diamonds are gateways. Dashed lines are inbound.
+        Day {day}. {note} Squares are divisional DCs. Diamonds are gateways.
       </p>
     </div>
   );
@@ -136,22 +157,29 @@ function DistrictDot({
   district,
   selected,
   labeled,
+  colored,
+  handover,
   onSelect,
 }: {
   district: DeskDistrict;
   selected: boolean;
   labeled: boolean;
+  colored: boolean;
+  handover: boolean;
   onSelect: (name: string) => void;
 }) {
   const active = district.affected > 0;
   const r = active ? 3.2 + Math.sqrt(district.affected) / 900 : 1.7;
   const fill = !active
     ? "var(--color-ink)"
-    : district.instrument === "cash"
-      ? "var(--color-teal)"
-      : district.instrument === "rehab"
-        ? "var(--color-ink)"
-        : "var(--color-clay)";
+    : !colored
+      ? "transparent"
+      : district.instrument === "cash"
+        ? "var(--color-teal)"
+        : district.instrument === "rehab"
+          ? "var(--color-ink)"
+          : "var(--color-clay)";
+  const ring = !active ? "transparent" : district.instrument === "cash" ? "var(--color-teal)" : district.instrument === "rehab" ? "var(--color-ink)" : "var(--color-clay)";
   return (
     <g>
       <circle
@@ -160,10 +188,24 @@ function DistrictDot({
         r={selected ? r + 2.4 : r}
         fill={fill}
         opacity={active ? 1 : 0.28}
-        stroke={selected ? "var(--color-card)" : "transparent"}
-        strokeWidth={selected ? 1.5 : 0}
+        stroke={
+          selected && colored ? "var(--color-card)" : selected || (active && !colored) ? ring : "transparent"
+        }
+        strokeWidth={selected ? 1.5 : active && !colored ? 1.3 : 0}
         pointerEvents="none"
       />
+      {handover && active ? (
+        <circle
+          cx={district.seed.x}
+          cy={-district.seed.y}
+          r={r + 3.6}
+          fill="none"
+          stroke={ring}
+          strokeWidth={0.7}
+          strokeDasharray="1.4 1.1"
+          pointerEvents="none"
+        />
+      ) : null}
       <circle
         cx={district.seed.x}
         cy={-district.seed.y}
