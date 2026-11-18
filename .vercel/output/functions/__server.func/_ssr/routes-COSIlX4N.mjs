@@ -4,7 +4,7 @@ import { i as Activity, r as Map$1, t as Users } from "../_libs/lucide-react.mjs
 import { t as clsx } from "../_libs/clsx.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
 import { a as ResponsiveContainer, i as Bar, n as YAxis, o as Tooltip, r as XAxis, t as BarChart } from "../_libs/recharts+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-BIrSmc3n.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-COSIlX4N.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function people(n) {
@@ -3052,6 +3052,20 @@ function phaseFor(day) {
 	for (const p of PHASES) if (day >= p.at) current = p;
 	return current;
 }
+/** Which echelons the operational map draws on a given day of the response week. */
+function mapLayers(day) {
+	const d = Math.max(0, Math.min(7, day));
+	return {
+		/** District colour means the cash / goods / shelter decision is locked. */
+		instrument: d >= 2,
+		/** Gateway to divisional DC. Day 4 is the first inbound day, still partial. */
+		inbound: d >= 5 ? 1 : d >= 4 ? .5 : 0,
+		/** Divisional DC to district store. */
+		district: d >= 7 ? 1 : d >= 6 ? .6 : 0,
+		/** Household clusters. */
+		handover: d >= 7
+	};
+}
 function instrumentLabel(instrument) {
 	if (instrument === "cash") return "Cash";
 	if (instrument === "physical") return "Physical";
@@ -3064,7 +3078,7 @@ function cn(...inputs) {
 function DistrictsPanel(props) {
 	const rows = props.desk.districts.filter((d) => props.showAll ? true : d.affected > 0).filter((d) => props.division === "all" || d.seed.division === props.division).filter((d) => d.seed.name.toLowerCase().includes(props.query.trim().toLowerCase())).sort((a, b) => b.affected - a.affected);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-		className: "grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]",
+		className: "grid min-w-0 gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "flex flex-col gap-4 border border-ink/10 bg-card p-4",
 			children: [
@@ -3164,7 +3178,7 @@ function DistrictsPanel(props) {
 				})
 			]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "min-w-0 border border-ink/10 bg-card",
+			className: "min-w-0 overflow-hidden border border-ink/10 bg-card",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "flex flex-col gap-3 border-b border-ink/10 p-3 sm:flex-row",
 				children: [
@@ -3284,7 +3298,7 @@ function DistrictsPanel(props) {
 function agencyName(id) {
 	return AGENCIES.find((a) => a.id === id)?.name ?? "—";
 }
-function OpsMap({ desk, selected, onSelect }) {
+function OpsMap({ desk, day, selected, onSelect }) {
 	const xs = [
 		...desk.districts.map((d) => d.seed.x),
 		...GATEWAYS.map((g) => g.x),
@@ -3302,13 +3316,15 @@ function OpsMap({ desk, selected, onSelect }) {
 	const vb = `${minX} ${-maxY} ${maxX - minX} ${maxY - minY}`;
 	const maxLeg = Math.max(1, ...desk.active.flatMap((d) => d.flows.map((f) => f.tonnes)), ...desk.portLegs.map((p) => p.tonnes));
 	const ranked = new Set(desk.active.slice(0, 5).map((d) => d.seed.name));
+	const layers = mapLayers(day);
+	const note = day < 2 ? "Signal only. Open rings are districts in the plan. Nothing is moving." : day < 4 ? "Instruments locked. Teal is cash, clay is physical aid, ink is shelter. Tonnes have not left the gateway." : day < 6 ? "Dashed lines are inbound tonnes, gateway to divisional DC." : day < 7 ? "Solid lines stage those tonnes into the district stores." : "Last mile. The outer ring is the household handover.";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "relative min-h-0",
+		className: "relative min-w-0",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 			viewBox: vb,
 			role: "img",
-			"aria-label": "Operational map. Kilometres from Dhaka, north at the top. Lines are aid flows.",
-			className: "h-auto w-full",
+			"aria-label": `Operational map on day ${day}. Kilometres from Dhaka, north at the top. ${note}`,
+			className: "block h-auto w-full max-w-full",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
 					x: minX,
@@ -3322,7 +3338,7 @@ function OpsMap({ desk, selected, onSelect }) {
 					minX,
 					maxY
 				}),
-				desk.portLegs.map((leg) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				layers.inbound > 0 ? desk.portLegs.map((leg) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
 					x1: leg.x1,
 					y1: -leg.y1,
 					x2: leg.x2,
@@ -3331,10 +3347,10 @@ function OpsMap({ desk, selected, onSelect }) {
 					strokeWidth: stroke(leg.tonnes, maxLeg),
 					strokeDasharray: "3 2",
 					strokeLinecap: "round",
-					opacity: .85,
+					opacity: .9 * layers.inbound,
 					pointerEvents: "none"
-				}, `${leg.port}-${leg.division}`)),
-				desk.active.flatMap((d) => d.flows.map((f) => {
+				}, `${leg.port}-${leg.division}`)) : null,
+				layers.district > 0 ? desk.active.flatMap((d) => d.flows.map((f) => {
 					const dc = desk.dcTonnes.find((x) => x.division === f.division);
 					if (!dc) return null;
 					const hot = selected === d.seed.name;
@@ -3346,58 +3362,76 @@ function OpsMap({ desk, selected, onSelect }) {
 						stroke: hot ? "var(--color-clay)" : "var(--color-ink)",
 						strokeWidth: stroke(f.tonnes, maxLeg),
 						strokeLinecap: "round",
-						opacity: selected && !hot ? .18 : .8,
+						opacity: (selected && !hot ? .18 : .85) * layers.district,
 						pointerEvents: "none"
 					}, `${d.seed.name}-${f.division}`);
-				})),
+				})) : null,
 				desk.districts.map((d) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DistrictDot, {
 					district: d,
 					selected: selected === d.seed.name,
 					labeled: ranked.has(d.seed.name) || selected === d.seed.name,
+					colored: layers.instrument,
+					handover: layers.handover,
 					onSelect
 				}, d.seed.name)),
-				desk.dcTonnes.map((dc) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-					x: dc.x - 4.2,
-					y: -dc.y - 4.2,
-					width: 8.4,
-					height: 8.4,
-					fill: "var(--color-card)",
-					stroke: "var(--color-ink)",
-					strokeWidth: 1.4,
-					pointerEvents: "none"
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
-					x: dc.x + 7,
-					y: -dc.y + 2,
-					fill: "var(--color-ink)",
-					fontSize: 9,
-					fontFamily: "Outfit, sans-serif",
-					pointerEvents: "none",
-					children: [dc.division, " DC"]
-				})] }, dc.division)),
-				desk.gateways.filter((g) => g.tonnes > 1).map((g) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
-					points: diamond(g.gateway.x, -g.gateway.y, 5.2),
-					fill: "var(--color-teal)",
-					pointerEvents: "none"
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
-					x: g.gateway.x + 8,
-					y: -g.gateway.y - 6,
-					fill: "var(--color-teal)",
-					fontSize: 8.5,
-					fontFamily: "Outfit, sans-serif",
-					pointerEvents: "none",
-					children: g.gateway.short
-				})] }, g.gateway.port))
+				desk.dcTonnes.map((dc) => {
+					const live = layers.inbound > 0;
+					return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+						opacity: live ? 1 : .35,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+							x: dc.x - 4.2,
+							y: -dc.y - 4.2,
+							width: 8.4,
+							height: 8.4,
+							fill: live ? "var(--color-ink)" : "var(--color-card)",
+							stroke: "var(--color-ink)",
+							strokeWidth: live ? 1.6 : 1.1,
+							pointerEvents: "none"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
+							x: dc.x + 7,
+							y: -dc.y + 2,
+							fill: "var(--color-ink)",
+							fontSize: 9,
+							fontFamily: "Outfit, sans-serif",
+							pointerEvents: "none",
+							children: [dc.division, " DC"]
+						})]
+					}, dc.division);
+				}),
+				desk.gateways.filter((g) => g.tonnes > 1).map((g) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+					opacity: layers.inbound > 0 ? 1 : layers.instrument ? .4 : .28,
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
+						points: diamond(g.gateway.x, -g.gateway.y, 5.2),
+						fill: "var(--color-teal)",
+						pointerEvents: "none"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+						x: g.gateway.x + 8,
+						y: -g.gateway.y - 6,
+						fill: "var(--color-teal)",
+						fontSize: 8.5,
+						fontFamily: "Outfit, sans-serif",
+						pointerEvents: "none",
+						children: g.gateway.short
+					})]
+				}, g.gateway.port))
 			]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "absolute bottom-2 left-3 bg-card/90 px-2 py-1 text-xs text-ink/70",
-			children: "Kilometres from Dhaka. Squares are divisional DCs. Diamonds are gateways. Dashed lines are inbound."
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+			className: "border-t border-ink/10 px-3 py-2 text-xs text-ink/70",
+			children: [
+				"Day ",
+				day,
+				". ",
+				note,
+				" Squares are divisional DCs. Diamonds are gateways."
+			]
 		})]
 	});
 }
-function DistrictDot({ district, selected, labeled, onSelect }) {
+function DistrictDot({ district, selected, labeled, colored, handover, onSelect }) {
 	const active = district.affected > 0;
 	const r = active ? 3.2 + Math.sqrt(district.affected) / 900 : 1.7;
-	const fill = !active ? "var(--color-ink)" : district.instrument === "cash" ? "var(--color-teal)" : district.instrument === "rehab" ? "var(--color-ink)" : "var(--color-clay)";
+	const fill = !active ? "var(--color-ink)" : !colored ? "transparent" : district.instrument === "cash" ? "var(--color-teal)" : district.instrument === "rehab" ? "var(--color-ink)" : "var(--color-clay)";
+	const ring = !active ? "transparent" : district.instrument === "cash" ? "var(--color-teal)" : district.instrument === "rehab" ? "var(--color-ink)" : "var(--color-clay)";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
 			cx: district.seed.x,
@@ -3405,10 +3439,20 @@ function DistrictDot({ district, selected, labeled, onSelect }) {
 			r: selected ? r + 2.4 : r,
 			fill,
 			opacity: active ? 1 : .28,
-			stroke: selected ? "var(--color-card)" : "transparent",
-			strokeWidth: selected ? 1.5 : 0,
+			stroke: selected && colored ? "var(--color-card)" : selected || active && !colored ? ring : "transparent",
+			strokeWidth: selected ? 1.5 : active && !colored ? 1.3 : 0,
 			pointerEvents: "none"
 		}),
+		handover && active ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			cx: district.seed.x,
+			cy: -district.seed.y,
+			r: r + 3.6,
+			fill: "none",
+			stroke: ring,
+			strokeWidth: .7,
+			strokeDasharray: "1.4 1.1",
+			pointerEvents: "none"
+		}) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
 			cx: district.seed.x,
 			cy: -district.seed.y,
@@ -3536,7 +3580,7 @@ function ServicePanel(props) {
 	]), props);
 	const busy = busiestGatewayTonnes(props.desk);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-		className: "grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]",
+		className: "grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "border border-ink/10 bg-card p-4 sm:p-5",
 			children: [
@@ -3834,7 +3878,7 @@ function Desk() {
 		setShowAll(false);
 	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
-		className: "mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6",
+		className: "mx-auto w-full max-w-6xl overflow-x-hidden px-4 pt-6 pb-20 sm:px-6",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", {
 				className: "border-b border-ink/10 pb-5",
@@ -3947,12 +3991,7 @@ function Desk() {
 							children: phase.k
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 							className: "text-xs text-ink/60 tabular-nums",
-							children: [
-								"Day ",
-								day,
-								" of ",
-								desk.leadDays
-							]
+							children: ["Day ", day]
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -3962,15 +4001,18 @@ function Desk() {
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
 						className: "mt-3 block text-xs text-ink/60",
 						htmlFor: "day",
-						children: ["Move through the response week", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+						children: ["Move through the response week. The network diagram follows this day.", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 							id: "day",
 							className: "mt-2",
 							type: "range",
 							min: 0,
-							max: 10,
+							max: 7,
 							step: 1,
 							value: day,
-							onChange: (e) => setDay(Number(e.target.value))
+							onChange: (e) => {
+								setDay(Number(e.target.value));
+								setView("map");
+							}
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
@@ -4024,18 +4066,19 @@ function Desk() {
 				role: "tabpanel",
 				children: [
 					view === "map" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "grid items-start gap-4 lg:grid-cols-[minmax(0,1.5fr)_20rem]",
+						className: "mt-4 grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,20rem)]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "border border-ink/10 bg-card",
+							className: "min-w-0 overflow-hidden border border-ink/10 bg-card",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(OpsMap, {
 								desk,
+								day,
 								selected,
 								onSelect: (name) => {
 									setSelected(name);
 									setView("map");
 								}
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "flex gap-2 overflow-x-auto border-t border-ink/10 p-3",
+								className: "flex min-w-0 gap-2 overflow-x-auto border-t border-ink/10 p-3",
 								children: desk.active.map((d) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 									type: "button",
 									onClick: () => setSelected(d.seed.name),
@@ -4044,7 +4087,7 @@ function Desk() {
 								}, d.seed.name))
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("aside", {
-							className: "border border-ink/10 bg-card p-4",
+							className: "min-w-0 border border-ink/10 bg-card p-4",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 									className: "text-xs font-medium tracking-widest text-teal uppercase",
